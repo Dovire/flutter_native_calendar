@@ -138,7 +138,7 @@ final event = CalendarEvent(
   startDate: DateTime.now().add(Duration(hours: 1)),
   endDate: DateTime.now().add(Duration(hours: 2)),
   description: 'Discuss project progress and next steps',
-  location: 'Conference Room A',
+  location: 'Conference Room A', // Simple string location
 );
 
 // Option 1: Open calendar app with pre-filled event (recommended)
@@ -163,6 +163,30 @@ if (hasPermissions) {
 }
 ```
 
+### Structured Location Example
+
+```dart
+import 'package:flutter_native_calendar/native_calendar.dart';
+
+// Create event with structured location data
+final event = CalendarEvent(
+  title: 'Business Meeting',
+  startDate: DateTime.now().add(Duration(hours: 2)),
+  endDate: DateTime.now().add(Duration(hours: 3)),
+  description: 'Important client meeting',
+  location: EventLocation.withCoordinates(
+    title: 'Corporate Headquarters',
+    address: '123 Business Ave, Suite 500, New York, NY 10001',
+    latitude: 40.7128,
+    longitude: -74.0060,
+    radius: 100.0, // 100 meter radius for geofencing
+    notes: 'Use the main entrance, ask for visitor pass',
+  ),
+);
+
+await NativeCalendar.openCalendarWithEvent(event);
+```
+
 ### Advanced Example with Platform-Specific Settings
 
 ```dart
@@ -180,20 +204,15 @@ final event = CalendarEvent(
   
   // Android-specific settings
   androidSettings: AndroidEventSettings(
-    attendees: ['john@company.com', 'jane@company.com'],
     reminderMinutes: [15, 60], // 15 minutes and 1 hour before
     eventStatus: 1, // confirmed
     visibility: 2, // private
     hasAlarm: true,
-    guestsCanModify: false,
-    guestsCanInviteOthers: false,
-    guestsCanSeeGuests: true,
   ),
   
   // iOS-specific settings
   iosSettings: IosEventSettings(
-    attendees: ['john@company.com', 'jane@company.com'],
-    alarmMinutes: [15, 60], // 15 minutes and 1 hour before
+    alarmMinutes: [15, 60], // 15 minutes and 1 hour before (max 2 on iOS)
     availability: 1, // busy
     priority: 1, // high priority
   ),
@@ -202,6 +221,65 @@ final event = CalendarEvent(
 // Add to calendar
 bool success = await NativeCalendar.addEventToCalendar(event);
 ```
+
+### Recurring Event Example
+
+```dart
+import 'package:flutter_native_calendar/native_calendar.dart';
+
+// Create a recurring event
+final recurringEvent = CalendarEvent(
+  title: 'Weekly Team Meeting',
+  startDate: DateTime.now().add(Duration(days: 1)),
+  endDate: DateTime.now().add(Duration(days: 1, hours: 1)),
+  description: 'Weekly team sync meeting',
+  location: 'Conference Room A',
+  
+  iosSettings: IosEventSettings(
+    alarmMinutes: [15, 5], // Two alarms: 15 min and 5 min before
+    availability: 1, // busy
+    hasRecurrenceRules: true,
+    recurrenceFrequency: RecurrenceFrequency.weekly,
+    recurrenceInterval: 1, // Every week
+    recurrenceEndDate: DateTime.now().add(Duration(days: 90)), // End after 3 months
+  ),
+);
+
+await NativeCalendar.openCalendarWithEvent(recurringEvent);
+```
+
+### Recurrence Frequency
+
+The plugin provides a `RecurrenceFrequency` enum for type-safe recurrence patterns:
+
+```dart
+enum RecurrenceFrequency {
+  daily,    // Every day
+  weekly,   // Every week
+  monthly,  // Every month
+  yearly,   // Every year
+}
+
+// Usage
+iosSettings: IosEventSettings(
+  hasRecurrenceRules: true,
+  recurrenceFrequency: RecurrenceFrequency.weekly,
+  recurrenceInterval: 2, // Every 2 weeks
+)
+```
+
+### Validation and Assertions
+
+The plugin includes built-in validation to prevent invalid data from reaching native code:
+
+- **iOS Alarms**: Maximum 2 alarms per event
+- **Availability**: Must be between 0-4
+- **Priority**: Must be between 0-9
+- **Recurrence**: Frequency is required when `hasRecurrenceRules` is true
+- **Android Event Status**: Must be 0 (tentative), 1 (confirmed), or 2 (canceled)
+- **Android Visibility**: Must be between 0-3
+
+These validations trigger assertion errors during development, helping catch configuration issues early.
 
 ### All-Day Event Example
 
@@ -247,40 +325,50 @@ if (!hasPermissions) {
 | `startDate` | `DateTime` | Event start date and time | ✅ |
 | `endDate` | `DateTime?` | Event end date and time | ❌ |
 | `description` | `String?` | Event description/notes | ❌ |
-| `location` | `String?` | Event location | ❌ |
+| `location` | `String?` or `EventLocation?` | Event location (simple string or structured data) | ❌ |
 | `isAllDay` | `bool` | Whether event is all-day (default: false) | ❌ |
 | `timeZone` | `String?` | Timezone identifier | ❌ |
 | `url` | `String?` | Associated URL | ❌ |
 | `androidSettings` | `AndroidEventSettings?` | Android-specific settings | ❌ |
 | `iosSettings` | `IosEventSettings?` | iOS-specific settings | ❌ |
 
+### EventLocation
+
+| Property | Type | Description | Required |
+|----------|------|-------------|----------|
+| `title` | `String` | Display name of the location | ✅ |
+| `address` | `String?` | Full address | ❌ |
+| `latitude` | `double?` | Latitude coordinate (-90 to 90) | ❌ |
+| `longitude` | `double?` | Longitude coordinate (-180 to 180) | ❌ |
+| `radius` | `double?` | Radius in meters (for geofencing) | ❌ |
+| `notes` | `String?` | Additional location notes | ❌ |
+
+**EventLocation Constructors:**
+- `EventLocation.simple(String title)` - Creates a basic location with just a title
+- `EventLocation.withCoordinates(...)` - Creates a location with GPS coordinates and full details
+
 ### AndroidEventSettings
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
-| `attendees` | `List<String>?` | List of attendee emails | `null` |
 | `calendarId` | `int?` | Target calendar ID | `null` (default) |
 | `eventStatus` | `int` | Event status (0=tentative, 1=confirmed, 2=canceled) | `1` |
 | `visibility` | `int` | Visibility (0=default, 1=confidential, 2=private, 3=public) | `0` |
 | `hasAlarm` | `bool` | Whether to set reminders | `true` |
 | `reminderMinutes` | `List<int>?` | Reminder times in minutes before event | `[15]` |
 | `eventColor` | `int?` | Event color as integer | `null` |
-| `guestsCanModify` | `bool` | Whether guests can modify | `false` |
-| `guestsCanInviteOthers` | `bool` | Whether guests can invite others | `false` |
-| `guestsCanSeeGuests` | `bool` | Whether guests can see other guests | `true` |
 
 ### IosEventSettings
 
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
 | `calendarIdentifier` | `String?` | Target calendar identifier | `null` (default) |
-| `attendees` | `List<String>?` | List of attendee emails | `null` |
 | `availability` | `int` | Availability (1=busy, 2=free, 3=tentative, 4=unavailable) | `1` |
-| `alarmMinutes` | `List<int>?` | Alarm times in minutes before event | `[15]` |
-| `priority` | `int` | Priority (1-4=high, 5=normal, 6-9=low) | `5` |
+| `alarmMinutes` | `List<int>?` | Alarm times in minutes before event (max 2 alarms) | `[15]` |
+| `priority` | `int` | Priority (1-4=High, 5=Normal, 6-9=Low) - added to notes | `5` |
 | `hasRecurrenceRules` | `bool` | Whether event has recurrence | `false` |
-| `recurrenceFrequency` | `String?` | Recurrence frequency | `null` |
-| `recurrenceInterval` | `int?` | Recurrence interval | `null` |
+| `recurrenceFrequency` | `RecurrenceFrequency?` | Recurrence frequency enum (daily, weekly, monthly, yearly) | `null` |
+| `recurrenceInterval` | `int?` | Recurrence interval (e.g., every 2 weeks) | `null` |
 | `recurrenceEndDate` | `DateTime?` | Recurrence end date | `null` |
 
 ### Methods
@@ -315,7 +403,10 @@ Requests calendar permissions from user.
 
 1. **Permission Denied**: Ensure NSCalendarsUsageDescription is added to Info.plist
 2. **Calendar Not Opening**: Ensure EventKit/EventKitUI frameworks are linked
-3. **iOS Simulator**: Calendar permissions might behave differently on simulator vs device
+3. **Priority Support**: iOS EventKit doesn't support direct event priority. Priority is added as text to event notes (e.g., "[High Priority]")
+4. **Alarm Limitations**: iOS allows maximum 2 alarms per event. Additional alarms in the list will be ignored
+5. **Recurrence Support**: iOS supports recurring events through EKRecurrenceRule
+6. **iOS Simulator**: Calendar permissions might behave differently on simulator vs device
 
 ### General Issues
 

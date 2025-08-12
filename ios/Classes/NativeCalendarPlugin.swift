@@ -59,8 +59,9 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
         event.notes = description
       }
       
-      if let location = args["location"] as? String {
-        event.location = location
+      // Handle location (can be string or structured location object)
+      if let locationData = args["location"] {
+        self.setEventLocation(event: event, locationData: locationData)
       }
       
       if let isAllDay = args["isAllDay"] as? Bool {
@@ -71,13 +72,16 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
         event.url = eventUrl
       }
       
+      // Extract iOS settings once
+      let iosSettings = args["iosSettings"] as? [String: Any]
+      
       // Apply iOS-specific settings
-      if let iosSettings = args["iosSettings"] as? [String: Any] {
-        self.applyIosSettings(to: event, settings: iosSettings)
+      if let settings = iosSettings {
+        self.applyIosSettings(to: event, settings: settings)
       }
       
-      // Set default calendar
-      event.calendar = self.eventStore.defaultCalendarForNewEvents
+      // Set calendar using extracted settings
+      self.setEventCalendar(event: event, iosSettings: iosSettings)
       
       let eventController = EKEventEditViewController()
       eventController.event = event
@@ -123,8 +127,9 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
       event.notes = description
     }
     
-    if let location = args["location"] as? String {
-      event.location = location
+    // Handle location (can be string or structured location object)
+    if let locationData = args["location"] {
+      setEventLocation(event: event, locationData: locationData)
     }
     
     if let isAllDay = args["isAllDay"] as? Bool {
@@ -135,33 +140,17 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
       event.url = eventUrl
     }
     
+    // Extract iOS settings once
+    let iosSettings = args["iosSettings"] as? [String: Any]
+    
     // Apply iOS-specific settings
-    if let iosSettings = args["iosSettings"] as? [String: Any] {
-      applyIosSettings(to: event, settings: iosSettings)
+    if let settings = iosSettings {
+      applyIosSettings(to: event, settings: settings)
     }
     
-    // Set calendar
-    if let iosSettings = args["iosSettings"] as? [String: Any],
-       let calendarIdentifier = iosSettings["calendarIdentifier"] as? String,
-       let calendar = eventStore.calendar(withIdentifier: calendarIdentifier) {
-      event.calendar = calendar
-    } else {
-      event.calendar = eventStore.defaultCalendarForNewEvents
-    }
-    
-    // Add alarms
-    if let iosSettings = args["iosSettings"] as? [String: Any],
-       let alarmMinutes = iosSettings["alarmMinutes"] as? [Int] {
-      for minutes in alarmMinutes {
-        let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
-        event.addAlarm(alarm)
-      }
-    } else {
-      // Default 15 minute reminder
-      let alarm = EKAlarm(relativeOffset: TimeInterval(-15 * 60))
-      event.addAlarm(alarm)
-    }
-    
+    // Set calendar using extracted settings
+    setEventCalendar(event: event, iosSettings: iosSettings)
+
     do {
       try eventStore.save(event, span: .thisEvent)
       result(true)
@@ -186,8 +175,146 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
       }
     }
     
+    // Handle alarms (iOS allows maximum 2 alarms per event)
+    if let alarmMinutes = settings["alarmMinutes"] as? [Int] {
+      let limitedAlarms = Array(alarmMinutes.prefix(2)) // Limit to 2 alarms
+      for minutes in limitedAlarms {
+        let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
+        event.addAlarm(alarm)
+      }
+    } else {
+      // Default 15 minute reminder if no specific alarms are set
+      let alarm = EKAlarm(relativeOffset: TimeInterval(-15 * 60))
+      event.addAlarm(alarm)
+    }
+    
+    // Handle recurrence rules
+    if let hasRecurrence = settings["hasRecurrenceRules"] as? Bool, hasRecurrence {
+      if let frequency = settings["recurrenceFrequency"] as? String {
+        let recurrenceRule = createRecurrenceRule(
+          frequency: frequency,
+          interval: settings["recurrenceInterval"] as? Int,
+          endDate: settings["recurrenceEndDate"] as? Double
+        )
+        if let rule = recurrenceRule {
+          event.recurrenceRules = [rule]
+        }
+      }
+    }
+    
+    // Note: EKEvent doesn't have a priority property (only EKReminder does)
+    // For events, we could potentially add priority info to the notes/description
+    // or use calendar colors as a workaround, but EventKit doesn't support direct event priority
     if let priority = settings["priority"] as? Int {
-      event.priority = priority
+      // We could append priority info to notes as a workaround
+      let priorityText = getPriorityText(priority)
+      if !priorityText.isEmpty {
+        let currentNotes = event.notes ?? ""
+        event.notes = currentNotes.isEmpty ? priorityText : "\(currentNotes)\n\(priorityText)"
+      }
+    }
+  }
+  
+  private func setEventCalendar(event: EKEvent, iosSettings: [String: Any]?) {
+    if let settings = iosSettings,
+       let calendarIdentifier = settings["calendarIdentifier"] as? String,
+       let calendar = eventStore.calendar(withIdentifier: calendarIdentifier) {
+      event.calendar = calendar
+    } else {
+      event.calendar = eventStore.defaultCalendarForNewEvents
+    }
+  }
+  
+  private func setEventLocation(event: EKEvent, locationData: Any) {
+    if let locationString = locationData as? String {
+      // Simple string location
+      event.location = locationString
+    } else if let locationMap = locationData as? [String: Any] {
+      // Structured location object
+      var locationText = ""
+      
+      if let title = locationMap["title"] as? String {
+        locationText = title
+      }
+      
+      if let address = locationMap["address"] as? String, !address.isEmpty {
+        if !locationText.isEmpty {
+          locationText += "\n" + address
+        } else {
+          locationText = address
+        }
+      }
+      
+      // Add coordinates info if available
+      if let latitude = locationMap["latitude"] as? Double,
+         let longitude = locationMap["longitude"] as? Double {
+        let coordsText = String(format: "%.6f, %.6f", latitude, longitude)
+        if !locationText.isEmpty {
+          locationText += "\nCoordinates: " + coordsText
+        } else {
+          locationText = "Coordinates: " + coordsText
+        }
+      }
+      
+      // Add notes if available
+      if let notes = locationMap["notes"] as? String, !notes.isEmpty {
+        if !locationText.isEmpty {
+          locationText += "\n" + notes
+        } else {
+          locationText = notes
+        }
+      }
+      
+      event.location = locationText.isEmpty ? nil : locationText
+      
+      // TODO: In future versions, we could create EKStructuredLocation for better integration
+      // with Maps app, but for now we'll use the basic location string approach
+    }
+  }
+  
+  private func createRecurrenceRule(frequency: String, interval: Int?, endDate: Double?) -> EKRecurrenceRule? {
+    var recurrenceFrequency: EKRecurrenceFrequency
+    
+    switch frequency.lowercased() {
+    case "daily":
+      recurrenceFrequency = .daily
+    case "weekly":
+      recurrenceFrequency = .weekly
+    case "monthly":
+      recurrenceFrequency = .monthly
+    case "yearly":
+      recurrenceFrequency = .yearly
+    default:
+      // Invalid frequency - return nil to prevent crash
+      print("Invalid recurrence frequency: \(frequency). Must be daily, weekly, monthly, or yearly.")
+      return nil
+    }
+    
+    let recurrenceInterval = max(interval ?? 1, 1) // Ensure positive interval
+    var recurrenceEnd: EKRecurrenceEnd?
+    
+    if let endTimestamp = endDate {
+      let endDate = Date(timeIntervalSince1970: endTimestamp / 1000.0)
+      recurrenceEnd = EKRecurrenceEnd(end: endDate)
+    }
+    
+    return EKRecurrenceRule(
+      recurrenceWith: recurrenceFrequency,
+      interval: recurrenceInterval,
+      end: recurrenceEnd
+    )
+  }
+  
+  private func getPriorityText(_ priority: Int) -> String {
+    switch priority {
+    case 1...4:
+      return "[High Priority]"
+    case 6...9:
+      return "[Low Priority]"
+    case 5:
+      return "" // Normal priority, don't add text
+    default:
+      return ""
     }
   }
   

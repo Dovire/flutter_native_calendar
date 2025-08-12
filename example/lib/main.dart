@@ -96,12 +96,19 @@ class _MyAppState extends State<MyApp> {
       startDate: DateTime.now().add(const Duration(days: 1)),
       endDate: DateTime.now().add(const Duration(days: 1, hours: 1)),
       description: 'This event was added directly to your calendar',
-      location: 'Home Office',
+      location: const EventLocation.withCoordinates(
+        title: 'Home Office',
+        address: '123 Main Street, Anytown, USA',
+        latitude: 37.7749,
+        longitude: -122.4194,
+        radius: 100.0,
+        notes: 'Use the side entrance',
+      ),
       androidSettings: const AndroidEventSettings(
         reminderMinutes: [15, 60], // 15 minutes and 1 hour before
         hasAlarm: true,
       ),
-      iosSettings: const IosEventSettings(
+      iosSettings: IosEventSettings(
         alarmMinutes: [15, 60], // 15 minutes and 1 hour before
         priority: 5, // normal priority
       ),
@@ -149,22 +156,23 @@ class _MyAppState extends State<MyApp> {
       startDate: DateTime.now().add(const Duration(days: 3)),
       endDate: DateTime.now().add(const Duration(days: 3, hours: 2)),
       description: 'Advanced event with platform-specific settings',
-      location: 'Conference Room A',
+      location: const EventLocation.withCoordinates(
+        title: 'Conference Room A',
+        address: '456 Business Plaza, Suite 100, Corporate City, NY 10001',
+        latitude: 40.7128,
+        longitude: -74.0060,
+        notes: '15th Floor, East Wing',
+      ),
       url: 'https://zoom.us/j/123456789',
       timeZone: 'America/New_York',
       androidSettings: const AndroidEventSettings(
-        attendees: ['colleague@company.com'],
-        reminderMinutes: [15, 30, 60],
+        reminderMinutes: [15, 30],
         eventStatus: 1, // confirmed
         visibility: 2, // private
         hasAlarm: true,
-        guestsCanModify: false,
-        guestsCanInviteOthers: true,
-        guestsCanSeeGuests: true,
       ),
-      iosSettings: const IosEventSettings(
-        attendees: ['colleague@company.com'],
-        alarmMinutes: [15, 30, 60],
+      iosSettings: IosEventSettings(
+        alarmMinutes: [15, 30], // Maximum 2 alarms on iOS
         availability: 1, // busy
         priority: 1, // high priority
       ),
@@ -180,6 +188,43 @@ class _MyAppState extends State<MyApp> {
     } catch (e) {
       setState(() {
         _statusMessage = 'Error opening advanced event: $e';
+      });
+    }
+  }
+
+  Future<void> _openRecurringEvent() async {
+    final event = CalendarEvent(
+      title: 'Weekly Team Meeting',
+      startDate: DateTime.now().add(const Duration(days: 1)),
+      endDate: DateTime.now().add(const Duration(days: 1, hours: 1)),
+      description: 'Recurring weekly team meeting',
+      location: const EventLocation.simple('Conference Room B'),
+      androidSettings: const AndroidEventSettings(
+        reminderMinutes: [15],
+        eventStatus: 1, // confirmed
+        hasAlarm: true,
+      ),
+      iosSettings: IosEventSettings(
+        alarmMinutes: const [15, 5], // 15 minutes and 5 minutes before (max 2)
+        availability: 1, // busy
+        priority: 5, // normal priority
+        hasRecurrenceRules: true,
+        recurrenceFrequency: RecurrenceFrequency.monthly,
+        recurrenceInterval: 3,
+        // recurrenceEndDate: DateTime.now().add(const Duration(days: 90)), // 3 months
+      ),
+    );
+
+    try {
+      bool success = await NativeCalendar.openCalendarWithEvent(event);
+      setState(() {
+        _statusMessage = success 
+          ? 'Recurring event calendar opened!' 
+          : 'Failed to open calendar for recurring event.';
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Error opening recurring event: $e';
       });
     }
   }
@@ -289,6 +334,17 @@ class _MyAppState extends State<MyApp> {
                 label: const Text('Open Calendar with Advanced Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              ElevatedButton.icon(
+                onPressed: _openRecurringEvent,
+                icon: const Icon(Icons.repeat, color: Colors.white,),
+                label: const Text('Open Calendar with Recurring Event'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                 ),
               ),

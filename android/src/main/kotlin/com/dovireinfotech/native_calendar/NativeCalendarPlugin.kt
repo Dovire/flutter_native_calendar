@@ -73,8 +73,11 @@ class NativeCalendarPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plu
         eventData["description"]?.let { 
           putExtra(CalendarContract.Events.DESCRIPTION, it as String) 
         }
-        eventData["location"]?.let { 
-          putExtra(CalendarContract.Events.EVENT_LOCATION, it as String) 
+        
+        // Handle location (can be string or structured location object)
+        eventData["location"]?.let { locationData ->
+          val locationString = formatLocationForAndroid(locationData)
+          putExtra(CalendarContract.Events.EVENT_LOCATION, locationString)
         }
         
         val startDate = eventData["startDate"] as Long
@@ -116,8 +119,11 @@ class NativeCalendarPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plu
         eventData["description"]?.let {
           put(CalendarContract.Events.DESCRIPTION, it as String)
         }
-        eventData["location"]?.let {
-          put(CalendarContract.Events.EVENT_LOCATION, it as String)
+        
+        // Handle location (can be string or structured location object)
+        eventData["location"]?.let { locationData ->
+          val locationString = formatLocationForAndroid(locationData)
+          put(CalendarContract.Events.EVENT_LOCATION, locationString)
         }
         
         val isAllDay = eventData["isAllDay"] as? Boolean ?: false
@@ -210,6 +216,47 @@ class NativeCalendarPlugin: FlutterPlugin, MethodCallHandler, ActivityAware, Plu
       return true
     }
     return false
+  }
+  
+  private fun formatLocationForAndroid(locationData: Any): String {
+    return when (locationData) {
+      is String -> locationData
+      is Map<*, *> -> {
+        val locationMap = locationData as Map<String, Any>
+        val parts = mutableListOf<String>()
+        
+        // Add title
+        locationMap["title"]?.let { title ->
+          parts.add(title as String)
+        }
+        
+        // Add address if available
+        locationMap["address"]?.let { address ->
+          val addressStr = address as String
+          if (addressStr.isNotEmpty()) {
+            parts.add(addressStr)
+          }
+        }
+        
+        // Add coordinates if available
+        val latitude = locationMap["latitude"] as? Double
+        val longitude = locationMap["longitude"] as? Double
+        if (latitude != null && longitude != null) {
+          parts.add("Coordinates: ${String.format("%.6f", latitude)}, ${String.format("%.6f", longitude)}")
+        }
+        
+        // Add notes if available
+        locationMap["notes"]?.let { notes ->
+          val notesStr = notes as String
+          if (notesStr.isNotEmpty()) {
+            parts.add(notesStr)
+          }
+        }
+        
+        parts.joinToString("\n")
+      }
+      else -> locationData.toString()
+    }
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
