@@ -1,3 +1,9 @@
+## 0.3.0
+
+* **NEW**: Added structured location support - locations can now be strings or EventLocation objects with GPS coordinates, addresses, and detailed metadata
+* **IMPROVED**: Completely refactored Android plugin with enhanced event handling, better calendar app compatibility, and improved reliability
+* **CLEANUP**: Code organization improvements and removed obsolete files for better maintainability
+
 ## 0.2.0
 
 * **BREAKING CHANGE**: Fixed critical iOS pods installation issue

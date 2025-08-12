@@ -20,7 +20,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_native_calendar: ^0.2.0
+  flutter_native_calendar: ^0.3.0
 ```
 
 Then run:
@@ -142,6 +142,7 @@ final event = CalendarEvent(
 );
 
 // Option 1: Open calendar app with pre-filled event (recommended)
+// Note: On Android, custom reminders may not be respected - calendar app uses its defaults
 bool success = await NativeCalendar.openCalendarWithEvent(event);
 if (success) {
   print('Calendar opened successfully');
@@ -150,6 +151,7 @@ if (success) {
 }
 
 // Option 2: Add event directly to calendar (requires permissions)
+// Note: This method supports precise reminder control on all platforms
 bool hasPermissions = await NativeCalendar.hasCalendarPermissions();
 if (!hasPermissions) {
   hasPermissions = await NativeCalendar.requestCalendarPermissions();
@@ -218,7 +220,9 @@ final event = CalendarEvent(
   ),
 );
 
-// Add to calendar
+// Add to calendar - ensures precise reminder control
+// Note: Use addEventToCalendar() for exact reminder times, 
+// or openCalendarWithEvent() for user-controlled creation
 bool success = await NativeCalendar.addEventToCalendar(event);
 ```
 
@@ -280,6 +284,26 @@ The plugin includes built-in validation to prevent invalid data from reaching na
 - **Android Visibility**: Must be between 0-3
 
 These validations trigger assertion errors during development, helping catch configuration issues early.
+
+### Android Alarm/Reminder Limitations
+
+**Important**: There are significant differences between the two calendar integration methods on Android:
+
+#### `openCalendarWithEvent()` - Intent Method (Recommended for User Control)
+- ⚠️ **Limited Alarm Support**: Calendar apps ignore custom reminder times when using Android Intents
+- Calendar apps use their own default reminder settings (typically 30 minutes)
+- Users can manually adjust reminders in the calendar app interface
+- Better for user-controlled event creation with app-specific defaults
+
+#### `addEventToCalendar()` - Direct Addition (Full Alarm Control)
+- ✅ **Full Alarm Support**: Creates exact reminders as specified in `reminderMinutes`
+- Supports multiple reminders per event
+- Requires calendar permissions (`READ_CALENDAR` and `WRITE_CALENDAR`)
+- Events are added directly without user interaction
+
+**Recommendation**: 
+- Use `openCalendarWithEvent()` for better user experience and let users set their preferred reminders
+- Use `addEventToCalendar()` when precise reminder control is required
 
 ### All-Day Event Example
 

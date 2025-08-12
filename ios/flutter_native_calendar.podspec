@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_native_calendar'
-  s.version          = '0.2.0'
+  s.version          = '0.3.0'
   s.summary          = 'A Flutter plugin to add events to native calendar on Android and iOS.'
   s.description      = <<-DESC
 A Flutter plugin that provides native calendar integration for Android and iOS platforms. 
