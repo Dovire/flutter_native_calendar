@@ -57,7 +57,17 @@ Add the following rules to your `android/app/proguard-rules.pro`:
 -keep class com.dovireinfotech.native_calendar.** { *; }
 ```
 
-#### 3. Minimum SDK Version
+#### 3. Proguard / R8 exceptions
+
+By default, Android apps use R8 for shrinking/obfuscation in release builds. In some cases, it can interfere with calendar querying functions (e.g., retrieveCalendars()). You may add the following rule to your `proguard-rules.pro` to prevent stripping related classes:
+
+```pro
+-keep class com.builttoroam.devicecalendar.** { *; }
+```
+
+See your app module’s ProGuard configuration (usually `android/app/proguard-rules.pro`) for where to place these rules. Refer to the Android developer docs for more about R8 and keep rules.
+
+#### 4. Minimum SDK Version
 
 Ensure your `android/app/build.gradle` has minimum SDK version 16 or higher:
 
@@ -75,7 +85,7 @@ android {
 
 ### iOS Setup
 
-#### 1. Add Privacy Usage Description
+#### 1. Add Privacy Usage Descriptions
 
 Add the following to your `ios/Runner/Info.plist`:
 
@@ -83,15 +93,25 @@ Add the following to your `ios/Runner/Info.plist`:
 <dict>
     <!-- Existing keys... -->
     
-    <!-- Calendar access permission -->
+    <!-- Calendar access (required) -->
     <key>NSCalendarsUsageDescription</key>
-    <string>This app needs access to calendar to add events.</string>
-    
+    <string>Access most functions for calendar viewing and editing.</string>
+
+    <!-- iOS 17+: Full Calendar access -->
+    <key>NSCalendarsFullAccessUsageDescription</key>
+    <string>Access most functions for calendar viewing and editing.</string>
+
+    <!-- Contacts access if adding attendees from contacts -->
+    <key>NSContactsUsageDescription</key>
+    <string>Access contacts for event attendee editing.</string>
+
     <!-- Optional: If you want to access reminders as well -->
     <key>NSRemindersUsageDescription</key>
     <string>This app needs access to reminders to manage calendar events.</string>
 </dict>
 ```
+
+Note: This plugin uses Swift on iOS. There is a known issue when adding a Swift-based plugin to an Objective‑C project. If you encounter build issues, see Flutter’s guidance on integrating Swift plugins into Objective‑C apps and apply the suggested workarounds.
 
 #### 2. Minimum iOS Version
 

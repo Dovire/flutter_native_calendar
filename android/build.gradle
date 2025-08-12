@@ -42,6 +42,8 @@ android {
 
     defaultConfig {
         minSdk = 21
+        // Provide consumer ProGuard rules to apps using this plugin
+        consumerProguardFiles 'consumer-rules.pro'
     }
 
     dependencies {
