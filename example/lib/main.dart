@@ -234,11 +234,11 @@ class _MyAppState extends State<MyApp> {
               if (!_hasPermissions)
                 ElevatedButton.icon(
                   onPressed: _requestPermissions,
-                  icon: const Icon(Icons.security),
+                  icon: const Icon(Icons.security, color: Colors.black),
                   label: const Text('Request Calendar Permissions'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                    foregroundColor: Colors.black,
                   ),
                 ),
               
@@ -252,7 +252,7 @@ class _MyAppState extends State<MyApp> {
               
               ElevatedButton.icon(
                 onPressed: _openCalendarWithBasicEvent,
-                icon: const Icon(Icons.calendar_today),
+                icon: const Icon(Icons.calendar_today, color: Colors.white),
                 label: const Text('Open Calendar with Basic Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
@@ -263,7 +263,7 @@ class _MyAppState extends State<MyApp> {
               
               ElevatedButton.icon(
                 onPressed: _addEventToCalendar,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add, color: Colors.white,),
                 label: const Text('Add Event Directly to Calendar'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -274,7 +274,7 @@ class _MyAppState extends State<MyApp> {
               
               ElevatedButton.icon(
                 onPressed: _openAllDayEvent,
-                icon: const Icon(Icons.today),
+                icon: const Icon(Icons.today, color: Colors.white,),
                 label: const Text('Open Calendar with All-Day Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
@@ -285,7 +285,7 @@ class _MyAppState extends State<MyApp> {
               
               ElevatedButton.icon(
                 onPressed: _openAdvancedEvent,
-                icon: const Icon(Icons.event),
+                icon: const Icon(Icons.event, color: Colors.white,),
                 label: const Text('Open Calendar with Advanced Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
