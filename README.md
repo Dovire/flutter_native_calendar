@@ -1,4 +1,4 @@
-# native_calendar
+# Flutter Native Calendar
 
 A Flutter plugin to add events to native calendar on Android and iOS with rich platform-specific settings and features.
 
@@ -20,7 +20,13 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  native_calendar: ^0.0.1
+  flutter_native_calendar: ^0.2.0
+```
+
+Then run:
+
+```bash
+flutter pub get
 ```
 
 ## Platform Setup
@@ -56,27 +62,16 @@ Add the following rules to your `android/app/proguard-rules.pro`:
 # Keep plugin classes
 -keep class com.dovireinfotech.native_calendar.** { *; }
 ```
+#### 3. Minimum SDK Version
 
-#### 3. Proguard / R8 exceptions
-
-By default, Android apps use R8 for shrinking/obfuscation in release builds. In some cases, it can interfere with calendar querying functions (e.g., retrieveCalendars()). You may add the following rule to your `proguard-rules.pro` to prevent stripping related classes:
-
-```pro
--keep class com.builttoroam.devicecalendar.** { *; }
-```
-
-See your app module’s ProGuard configuration (usually `android/app/proguard-rules.pro`) for where to place these rules. Refer to the Android developer docs for more about R8 and keep rules.
-
-#### 4. Minimum SDK Version
-
-Ensure your `android/app/build.gradle` has minimum SDK version 16 or higher:
+Ensure your `android/app/build.gradle` has minimum SDK version 19 or higher:
 
 ```gradle
 android {
     compileSdkVersion 34
     
     defaultConfig {
-        minSdkVersion 16  // Minimum required
+        minSdkVersion 19  // Minimum required for calendar features
         targetSdkVersion 34
         // ... other configurations
     }
@@ -115,10 +110,10 @@ Note: This plugin uses Swift on iOS. There is a known issue when adding a Swift-
 
 #### 2. Minimum iOS Version
 
-Ensure your `ios/Podfile` targets iOS 11.0 or higher:
+Ensure your `ios/Podfile` targets iOS 12.0 or higher:
 
 ```ruby
-platform :ios, '11.0'
+platform :ios, '12.0'
 ```
 
 #### 3. EventKit Framework
@@ -135,7 +130,7 @@ The plugin automatically includes EventKit framework, but you can verify it's in
 ### Basic Example
 
 ```dart
-import 'package:native_calendar/native_calendar.dart';
+import 'package:flutter_native_calendar/native_calendar.dart';
 
 // Create a simple event
 final event = CalendarEvent(
@@ -171,7 +166,7 @@ if (hasPermissions) {
 ### Advanced Example with Platform-Specific Settings
 
 ```dart
-import 'package:native_calendar/native_calendar.dart';
+import 'package:flutter_native_calendar/native_calendar.dart';
 
 // Create event with platform-specific settings
 final event = CalendarEvent(
