@@ -11,8 +11,7 @@ A Flutter plugin to add events to native calendar on Android and iOS with rich p
 - ✅ Support for reminders, alarms, and advanced calendar features
 - ✅ All-day events support
 - ✅ Timezone support
-- ✅ Attendees and guest permissions (Android)
-- ✅ Event recurrence (iOS)
+- ✅ Structured location support with GPS coordinates and addresses
 
 ## Installation
 
@@ -95,10 +94,6 @@ Add the following to your `ios/Runner/Info.plist`:
     <!-- iOS 17+: Full Calendar access -->
     <key>NSCalendarsFullAccessUsageDescription</key>
     <string>Access most functions for calendar viewing and editing.</string>
-
-    <!-- Contacts access if adding attendees from contacts -->
-    <key>NSContactsUsageDescription</key>
-    <string>Access contacts for event attendee editing.</string>
 
     <!-- Optional: If you want to access reminders as well -->
     <key>NSRemindersUsageDescription</key>
@@ -271,19 +266,6 @@ iosSettings: IosEventSettings(
   recurrenceInterval: 2, // Every 2 weeks
 )
 ```
-
-### Validation and Assertions
-
-The plugin includes built-in validation to prevent invalid data from reaching native code:
-
-- **iOS Alarms**: Maximum 2 alarms per event
-- **Availability**: Must be between 0-4
-- **Priority**: Must be between 0-9
-- **Recurrence**: Frequency is required when `hasRecurrenceRules` is true
-- **Android Event Status**: Must be 0 (tentative), 1 (confirmed), or 2 (canceled)
-- **Android Visibility**: Must be between 0-3
-
-These validations trigger assertion errors during development, helping catch configuration issues early.
 
 ### Android Alarm/Reminder Limitations
 
