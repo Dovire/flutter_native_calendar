@@ -25,31 +25,34 @@ abstract class NativeCalendarPlatform extends PlatformInterface {
   }
 
   /// Opens the native calendar app with pre-filled event details.
-  /// 
+  ///
   /// Returns true if the calendar was successfully opened, false otherwise.
   Future<bool> openCalendarWithEvent(CalendarEvent event) {
-    throw UnimplementedError('openCalendarWithEvent() has not been implemented.');
+    throw UnimplementedError(
+        'openCalendarWithEvent() has not been implemented.');
   }
 
   /// Adds an event directly to the calendar (requires calendar permissions).
-  /// 
+  ///
   /// Returns true if the event was successfully added, false otherwise.
   Future<bool> addEventToCalendar(CalendarEvent event) {
     throw UnimplementedError('addEventToCalendar() has not been implemented.');
   }
 
   /// Checks if calendar permissions are granted.
-  /// 
+  ///
   /// Returns true if permissions are granted, false otherwise.
   Future<bool> hasCalendarPermissions() {
-    throw UnimplementedError('hasCalendarPermissions() has not been implemented.');
+    throw UnimplementedError(
+        'hasCalendarPermissions() has not been implemented.');
   }
 
   /// Requests calendar permissions from the user.
-  /// 
+  ///
   /// Returns true if permissions are granted, false otherwise.
   Future<bool> requestCalendarPermissions() {
-    throw UnimplementedError('requestCalendarPermissions() has not been implemented.');
+    throw UnimplementedError(
+        'requestCalendarPermissions() has not been implemented.');
   }
 
   Future<String?> getPlatformVersion() {

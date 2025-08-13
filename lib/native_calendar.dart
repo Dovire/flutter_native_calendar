@@ -6,13 +6,13 @@ import 'native_calendar_platform_interface.dart';
 /// Main API class for the native_calendar plugin.
 class NativeCalendar {
   /// Opens the native calendar app with pre-filled event details.
-  /// 
+  ///
   /// This method opens the device's default calendar application
   /// with the event details pre-filled. The user can then review
   /// and save the event manually.
-  /// 
+  ///
   /// Returns `true` if the calendar was successfully opened, `false` otherwise.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// final event = CalendarEvent(
@@ -22,7 +22,7 @@ class NativeCalendar {
   ///   description: 'Discuss project progress',
   ///   location: 'Conference Room A',
   /// );
-  /// 
+  ///
   /// final success = await NativeCalendar.openCalendarWithEvent(event);
   /// if (success) {
   ///   print('Calendar opened successfully');
@@ -35,14 +35,14 @@ class NativeCalendar {
   }
 
   /// Adds an event directly to the calendar without user interaction.
-  /// 
+  ///
   /// This method requires calendar permissions and directly adds
   /// the event to the device's calendar without opening the calendar app.
-  /// 
+  ///
   /// Returns `true` if the event was successfully added, `false` otherwise.
-  /// 
+  ///
   /// Note: Make sure to request calendar permissions before calling this method.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// // First check/request permissions
@@ -50,14 +50,14 @@ class NativeCalendar {
   /// if (!hasPermissions) {
   ///   hasPermissions = await NativeCalendar.requestCalendarPermissions();
   /// }
-  /// 
+  ///
   /// if (hasPermissions) {
   ///   final event = CalendarEvent(
   ///     title: 'Automated Reminder',
   ///     startDate: DateTime.now().add(Duration(days: 1)),
   ///     description: 'This event was added programmatically',
   ///   );
-  ///   
+  ///
   ///   final success = await NativeCalendar.addEventToCalendar(event);
   ///   if (success) {
   ///     print('Event added successfully');
@@ -69,9 +69,9 @@ class NativeCalendar {
   }
 
   /// Checks if the app has calendar permissions.
-  /// 
+  ///
   /// Returns `true` if calendar permissions are granted, `false` otherwise.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// bool hasPermissions = await NativeCalendar.hasCalendarPermissions();
@@ -84,9 +84,9 @@ class NativeCalendar {
   }
 
   /// Requests calendar permissions from the user.
-  /// 
+  ///
   /// Returns `true` if permissions are granted, `false` if denied.
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// bool permissionsGranted = await NativeCalendar.requestCalendarPermissions();
@@ -101,7 +101,7 @@ class NativeCalendar {
   }
 
   /// Gets the platform version (for testing purposes).
-  /// 
+  ///
   /// Returns the platform version string.
   static Future<String?> getPlatformVersion() {
     return NativeCalendarPlatform.instance.getPlatformVersion();

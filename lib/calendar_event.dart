@@ -2,31 +2,31 @@
 class CalendarEvent {
   /// The title of the event
   final String title;
-  
+
   /// The description/notes of the event
   final String? description;
-  
+
   /// The start date and time of the event
   final DateTime startDate;
-  
+
   /// The end date and time of the event
   final DateTime? endDate;
-  
+
   /// The location of the event (can be string or EventLocation)
   final dynamic location;
-  
+
   /// Whether this is an all-day event
   final bool isAllDay;
-  
+
   /// The timezone identifier (e.g., "America/New_York")
   final String? timeZone;
-  
+
   /// URL associated with the event
   final String? url;
-  
+
   /// Android-specific settings
   final AndroidEventSettings? androidSettings;
-  
+
   /// iOS-specific settings
   final IosEventSettings? iosSettings;
 
@@ -41,8 +41,9 @@ class CalendarEvent {
     this.url,
     this.androidSettings,
     this.iosSettings,
-  }) : assert(location == null || location is String || location is EventLocation, 
-              'Location must be either a String or EventLocation object');
+  }) : assert(
+            location == null || location is String || location is EventLocation,
+            'Location must be either a String or EventLocation object');
 
   /// Converts the event to a map for platform channel communication
   Map<String, dynamic> toMap() {
@@ -52,7 +53,7 @@ class CalendarEvent {
     } else if (location is String) {
       locationData = location;
     }
-    
+
     return {
       'title': title,
       'description': description,
@@ -77,7 +78,7 @@ enum RecurrenceFrequency {
 
   const RecurrenceFrequency(this.value);
   final String value;
-  
+
   @override
   String toString() => value;
 }
@@ -86,19 +87,19 @@ enum RecurrenceFrequency {
 class EventLocation {
   /// The display name/title of the location
   final String title;
-  
+
   /// Full address of the location
   final String? address;
-  
+
   /// Latitude coordinate
   final double? latitude;
-  
+
   /// Longitude coordinate
   final double? longitude;
-  
+
   /// Radius in meters (for geofencing/proximity alerts)
   final double? radius;
-  
+
   /// Additional notes about the location
   final String? notes;
 
@@ -109,13 +110,15 @@ class EventLocation {
     this.longitude,
     this.radius,
     this.notes,
-  }) : assert(latitude == null || (latitude >= -90 && latitude <= 90), 'Latitude must be between -90 and 90'),
-       assert(longitude == null || (longitude >= -180 && longitude <= 180), 'Longitude must be between -180 and 180'),
-       assert(radius == null || radius > 0, 'Radius must be positive');
+  })  : assert(latitude == null || (latitude >= -90 && latitude <= 90),
+            'Latitude must be between -90 and 90'),
+        assert(longitude == null || (longitude >= -180 && longitude <= 180),
+            'Longitude must be between -180 and 180'),
+        assert(radius == null || radius > 0, 'Radius must be positive');
 
   /// Creates a simple location with just a title
   const EventLocation.simple(String title) : this(title: title);
-  
+
   /// Creates a location with coordinates
   const EventLocation.withCoordinates({
     required String title,
@@ -125,13 +128,13 @@ class EventLocation {
     double? radius,
     String? notes,
   }) : this(
-    title: title,
-    address: address,
-    latitude: latitude,
-    longitude: longitude,
-    radius: radius,
-    notes: notes,
-  );
+          title: title,
+          address: address,
+          latitude: latitude,
+          longitude: longitude,
+          radius: radius,
+          notes: notes,
+        );
 
   Map<String, dynamic> toMap() {
     return {
@@ -143,7 +146,7 @@ class EventLocation {
       'notes': notes,
     };
   }
-  
+
   @override
   String toString() => title;
 }
@@ -152,19 +155,19 @@ class EventLocation {
 class AndroidEventSettings {
   /// Calendar ID to add the event to (null for default calendar)
   final int? calendarId;
-  
+
   /// Event status (0 = tentative, 1 = confirmed, 2 = canceled)
   final int eventStatus;
-  
+
   /// Visibility (0 = default, 1 = confidential, 2 = private, 3 = public)
   final int visibility;
-  
+
   /// Whether the event has an alarm/reminder
   final bool hasAlarm;
-  
+
   /// Reminder minutes before the event (e.g., 15 for 15 minutes before)
   final List<int>? reminderMinutes;
-  
+
   /// Event color (as integer)
   final int? eventColor;
 
@@ -175,9 +178,12 @@ class AndroidEventSettings {
     this.hasAlarm = true,
     this.reminderMinutes = const [15], // 15 minutes before by default
     this.eventColor,
-  }) : assert(eventStatus >= 0 && eventStatus <= 2, 'Event status must be 0 (tentative), 1 (confirmed), or 2 (canceled)'),
-       assert(visibility >= 0 && visibility <= 3, 'Visibility must be between 0 and 3'),
-       assert(calendarId == null || calendarId >= 0, 'Calendar ID must be non-negative');
+  })  : assert(eventStatus >= 0 && eventStatus <= 2,
+            'Event status must be 0 (tentative), 1 (confirmed), or 2 (canceled)'),
+        assert(visibility >= 0 && visibility <= 3,
+            'Visibility must be between 0 and 3'),
+        assert(calendarId == null || calendarId >= 0,
+            'Calendar ID must be non-negative');
 
   Map<String, dynamic> toMap() {
     return {
@@ -195,25 +201,25 @@ class AndroidEventSettings {
 class IosEventSettings {
   /// The calendar identifier to add the event to (null for default calendar)
   final String? calendarIdentifier;
-  
+
   /// Event availability (0 = not supported, 1 = busy, 2 = free, 3 = tentative, 4 = unavailable)
   final int availability;
-  
+
   /// List of alarms (in minutes before the event)
   final List<int>? alarmMinutes;
-  
+
   /// Event priority (0 = undefined, 1-4 = high, 5 = normal, 6-9 = low)
   final int priority;
-  
+
   /// Whether the event has recurrence rules
   final bool hasRecurrenceRules;
-  
+
   /// Recurrence frequency (daily, weekly, monthly, yearly)
   final RecurrenceFrequency? recurrenceFrequency;
-  
+
   /// Recurrence interval (e.g., every 2 weeks)
   final int? recurrenceInterval;
-  
+
   /// End date for recurrence
   final DateTime? recurrenceEndDate;
 
@@ -226,11 +232,16 @@ class IosEventSettings {
     this.recurrenceFrequency,
     this.recurrenceInterval,
     this.recurrenceEndDate,
-  }) : assert(availability >= 0 && availability <= 4, 'Availability must be between 0 and 4'),
-       assert(priority >= 0 && priority <= 9, 'Priority must be between 0 and 9'),
-       assert(alarmMinutes == null || alarmMinutes.length <= 2, 'iOS supports maximum 2 alarms per event'),
-       assert(!hasRecurrenceRules || recurrenceFrequency != null, 'Recurrence frequency is required when hasRecurrenceRules is true'),
-       assert(recurrenceInterval == null || recurrenceInterval > 0, 'Recurrence interval must be positive');
+  })  : assert(availability >= 0 && availability <= 4,
+            'Availability must be between 0 and 4'),
+        assert(
+            priority >= 0 && priority <= 9, 'Priority must be between 0 and 9'),
+        assert(alarmMinutes == null || alarmMinutes.length <= 2,
+            'iOS supports maximum 2 alarms per event'),
+        assert(!hasRecurrenceRules || recurrenceFrequency != null,
+            'Recurrence frequency is required when hasRecurrenceRules is true'),
+        assert(recurrenceInterval == null || recurrenceInterval > 0,
+            'Recurrence interval must be positive');
 
   Map<String, dynamic> toMap() {
     return {

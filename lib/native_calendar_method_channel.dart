@@ -41,7 +41,8 @@ class MethodChannelNativeCalendar extends NativeCalendarPlatform {
   @override
   Future<bool> hasCalendarPermissions() async {
     try {
-      final result = await methodChannel.invokeMethod<bool>('hasCalendarPermissions');
+      final result =
+          await methodChannel.invokeMethod<bool>('hasCalendarPermissions');
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error checking calendar permissions: ${e.message}');
@@ -52,7 +53,8 @@ class MethodChannelNativeCalendar extends NativeCalendarPlatform {
   @override
   Future<bool> requestCalendarPermissions() async {
     try {
-      final result = await methodChannel.invokeMethod<bool>('requestCalendarPermissions');
+      final result =
+          await methodChannel.invokeMethod<bool>('requestCalendarPermissions');
       return result ?? false;
     } on PlatformException catch (e) {
       debugPrint('Error requesting calendar permissions: ${e.message}');
@@ -62,7 +64,8 @@ class MethodChannelNativeCalendar extends NativeCalendarPlatform {
 
   @override
   Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
+    final version =
+        await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
 }

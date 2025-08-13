@@ -27,9 +27,10 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     String platformVersion;
     bool hasPermissions;
-    
+
     try {
-      platformVersion = await NativeCalendar.getPlatformVersion() ?? 'Unknown platform version';
+      platformVersion = await NativeCalendar.getPlatformVersion() ??
+          'Unknown platform version';
       hasPermissions = await NativeCalendar.hasCalendarPermissions();
     } catch (e) {
       platformVersion = 'Failed to get platform version.';
@@ -49,9 +50,9 @@ class _MyAppState extends State<MyApp> {
       bool granted = await NativeCalendar.requestCalendarPermissions();
       setState(() {
         _hasPermissions = granted;
-        _statusMessage = granted 
-          ? 'Calendar permissions granted!' 
-          : 'Calendar permissions denied.';
+        _statusMessage = granted
+            ? 'Calendar permissions granted!'
+            : 'Calendar permissions denied.';
       });
     } catch (e) {
       setState(() {
@@ -72,9 +73,9 @@ class _MyAppState extends State<MyApp> {
     try {
       bool success = await NativeCalendar.openCalendarWithEvent(event);
       setState(() {
-        _statusMessage = success 
-          ? 'Calendar opened successfully!' 
-          : 'Failed to open calendar.';
+        _statusMessage = success
+            ? 'Calendar opened successfully!'
+            : 'Failed to open calendar.';
       });
     } catch (e) {
       setState(() {
@@ -86,7 +87,8 @@ class _MyAppState extends State<MyApp> {
   Future<void> _addEventToCalendar() async {
     if (!_hasPermissions) {
       setState(() {
-        _statusMessage = 'Calendar permissions required. Please grant permissions first.';
+        _statusMessage =
+            'Calendar permissions required. Please grant permissions first.';
       });
       return;
     }
@@ -117,9 +119,9 @@ class _MyAppState extends State<MyApp> {
     try {
       bool success = await NativeCalendar.addEventToCalendar(event);
       setState(() {
-        _statusMessage = success 
-          ? 'Event added to calendar successfully!' 
-          : 'Failed to add event to calendar.';
+        _statusMessage = success
+            ? 'Event added to calendar successfully!'
+            : 'Failed to add event to calendar.';
       });
     } catch (e) {
       setState(() {
@@ -139,9 +141,9 @@ class _MyAppState extends State<MyApp> {
     try {
       bool success = await NativeCalendar.openCalendarWithEvent(event);
       setState(() {
-        _statusMessage = success 
-          ? 'All-day event calendar opened!' 
-          : 'Failed to open calendar for all-day event.';
+        _statusMessage = success
+            ? 'All-day event calendar opened!'
+            : 'Failed to open calendar for all-day event.';
       });
     } catch (e) {
       setState(() {
@@ -181,9 +183,9 @@ class _MyAppState extends State<MyApp> {
     try {
       bool success = await NativeCalendar.openCalendarWithEvent(event);
       setState(() {
-        _statusMessage = success 
-          ? 'Advanced event calendar opened!' 
-          : 'Failed to open calendar for advanced event.';
+        _statusMessage = success
+            ? 'Advanced event calendar opened!'
+            : 'Failed to open calendar for advanced event.';
       });
     } catch (e) {
       setState(() {
@@ -218,9 +220,9 @@ class _MyAppState extends State<MyApp> {
     try {
       bool success = await NativeCalendar.openCalendarWithEvent(event);
       setState(() {
-        _statusMessage = success 
-          ? 'Recurring event calendar opened!' 
-          : 'Failed to open calendar for recurring event.';
+        _statusMessage = success
+            ? 'Recurring event calendar opened!'
+            : 'Failed to open calendar for recurring event.';
       });
     } catch (e) {
       setState(() {
@@ -264,9 +266,9 @@ class _MyAppState extends State<MyApp> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _hasPermissions 
-                              ? 'Calendar permissions granted' 
-                              : 'Calendar permissions not granted',
+                            _hasPermissions
+                                ? 'Calendar permissions granted'
+                                : 'Calendar permissions not granted',
                           ),
                         ],
                       ),
@@ -275,7 +277,6 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               const SizedBox(height: 16),
-              
               if (!_hasPermissions)
                 ElevatedButton.icon(
                   onPressed: _requestPermissions,
@@ -286,15 +287,12 @@ class _MyAppState extends State<MyApp> {
                     foregroundColor: Colors.black,
                   ),
                 ),
-              
               const SizedBox(height: 16),
-              
               Text(
                 'Calendar Operations',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
-              
               ElevatedButton.icon(
                 onPressed: _openCalendarWithBasicEvent,
                 icon: const Icon(Icons.calendar_today, color: Colors.white),
@@ -305,10 +303,12 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               const SizedBox(height: 8),
-              
               ElevatedButton.icon(
                 onPressed: _addEventToCalendar,
-                icon: const Icon(Icons.add, color: Colors.white,),
+                icon: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
                 label: const Text('Add Event Directly to Calendar'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -316,10 +316,12 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               const SizedBox(height: 8),
-              
               ElevatedButton.icon(
                 onPressed: _openAllDayEvent,
-                icon: const Icon(Icons.today, color: Colors.white,),
+                icon: const Icon(
+                  Icons.today,
+                  color: Colors.white,
+                ),
                 label: const Text('Open Calendar with All-Day Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
@@ -327,10 +329,12 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               const SizedBox(height: 8),
-              
               ElevatedButton.icon(
                 onPressed: _openAdvancedEvent,
-                icon: const Icon(Icons.event, color: Colors.white,),
+                icon: const Icon(
+                  Icons.event,
+                  color: Colors.white,
+                ),
                 label: const Text('Open Calendar with Advanced Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
@@ -338,19 +342,19 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               const SizedBox(height: 8),
-              
               ElevatedButton.icon(
                 onPressed: _openRecurringEvent,
-                icon: const Icon(Icons.repeat, color: Colors.white,),
+                icon: const Icon(
+                  Icons.repeat,
+                  color: Colors.white,
+                ),
                 label: const Text('Open Calendar with Recurring Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                 ),
               ),
-              
               const SizedBox(height: 24),
-              
               if (_statusMessage.isNotEmpty)
                 Card(
                   color: Colors.grey[100],

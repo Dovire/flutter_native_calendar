@@ -7,7 +7,6 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 class MockNativeCalendarPlatform
     with MockPlatformInterfaceMixin
     implements NativeCalendarPlatform {
-
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
 
@@ -25,7 +24,8 @@ class MockNativeCalendarPlatform
 }
 
 void main() {
-  final NativeCalendarPlatform initialPlatform = NativeCalendarPlatform.instance;
+  final NativeCalendarPlatform initialPlatform =
+      NativeCalendarPlatform.instance;
 
   test('$MethodChannelNativeCalendar is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelNativeCalendar>());
