@@ -106,4 +106,54 @@ class NativeCalendar {
   static Future<String?> getPlatformVersion() {
     return NativeCalendarPlatform.instance.getPlatformVersion();
   }
+
+  /// Finds calendar events that contain a specific marker in their description/notes.
+  ///
+  /// This method searches for events that have been marked with a system-generated
+  /// identifier. The marker helps identify events that should not be manually modified.
+  ///
+  /// The marker format includes:
+  /// - A unique identifier that can be set dynamically by the app
+  /// - A warning message: "System Generated Event - Do not modify this line"
+  ///
+  /// On Android, the marker is searched in the event's description field.
+  /// On iOS, the marker is searched in the event's notes field.
+  ///
+  /// [marker] - The unique marker string to search for in event descriptions/notes
+  /// [startDate] - Optional start date to limit the search range (defaults to 30 days ago)
+  /// [endDate] - Optional end date to limit the search range (defaults to 30 days from now)
+  ///
+  /// Returns a list of event IDs that contain the specified marker.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Create an event with a system marker
+  /// final event = CalendarEvent(
+  ///   title: 'Automated Event',
+  ///   startDate: DateTime.now().add(Duration(hours: 1)),
+  ///   description: 'This event was created automatically',
+  ///   systemMarker: 'APP_SYNC_2024', // Marker will be automatically formatted
+  /// );
+  /// await NativeCalendar.addEventToCalendar(event);
+  ///
+  /// // Search for events with that marker
+  /// final eventIds = await NativeCalendar.findEventsWithMarker(
+  ///   'APP_SYNC_2024',
+  ///   startDate: DateTime.now().subtract(Duration(days: 7)),
+  ///   endDate: DateTime.now().add(Duration(days: 7)),
+  /// );
+  ///
+  /// print('Found ${eventIds.length} events with the marker');
+  /// ```
+  static Future<List<String>> findEventsWithMarker(
+    String marker, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return NativeCalendarPlatform.instance.findEventsWithMarker(
+      marker,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
 }

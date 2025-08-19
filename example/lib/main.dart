@@ -231,6 +231,100 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _addEventWithMarker() async {
+    if (!_hasPermissions) {
+      setState(() {
+        _statusMessage =
+            'Calendar permissions required. Please grant permissions first.';
+      });
+      return;
+    }
+
+    final event = CalendarEvent(
+      title: 'System Generated Event',
+      startDate: DateTime.now().add(const Duration(hours: 2)),
+      endDate: DateTime.now().add(const Duration(hours: 3)),
+      description: 'This is a system-generated event that can be found using markers.',
+      location: 'Demo Location',
+      systemMarker: 'FLUTTER_DEMO_2024', // Marker will be automatically formatted and appended
+    );
+
+    try {
+      bool success = await NativeCalendar.addEventToCalendar(event);
+      setState(() {
+        _statusMessage = success
+            ? 'Event with marker added successfully! You can now search for it.'
+            : 'Failed to add event with marker.';
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Error adding event with marker: $e';
+      });
+    }
+  }
+
+  Future<void> _addEventWithMarkerOnly() async {
+    if (!_hasPermissions) {
+      setState(() {
+        _statusMessage =
+            'Calendar permissions required. Please grant permissions first.';
+      });
+      return;
+    }
+
+    final event = CalendarEvent(
+      title: 'Marker-Only Event',
+      startDate: DateTime.now().add(const Duration(hours: 4)),
+      endDate: DateTime.now().add(const Duration(hours: 5)),
+      // No description provided - marker will be the only content
+      location: 'Demo Location',
+      systemMarker: 'FLUTTER_DEMO_2024', // Only the marker will appear in description
+    );
+
+    try {
+      bool success = await NativeCalendar.addEventToCalendar(event);
+      setState(() {
+        _statusMessage = success
+            ? 'Event with marker-only description added successfully!'
+            : 'Failed to add event with marker.';
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Error adding event with marker: $e';
+      });
+    }
+  }
+
+  Future<void> _findEventsWithMarker() async {
+    if (!_hasPermissions) {
+      setState(() {
+        _statusMessage =
+            'Calendar permissions required. Please grant permissions first.';
+      });
+      return;
+    }
+
+    try {
+      final eventIds = await NativeCalendar.findEventsWithMarker(
+        'FLUTTER_DEMO_2024',
+        startDate: DateTime.now().subtract(const Duration(days: 1)),
+        endDate: DateTime.now().add(const Duration(days: 7)),
+      );
+      
+      setState(() {
+        if (eventIds.isEmpty) {
+          _statusMessage = 'No events found with the marker "FLUTTER_DEMO_2024". Try adding an event with marker first.';
+        } else {
+          _statusMessage = 'Found ${eventIds.length} event(s) with marker "FLUTTER_DEMO_2024":\n${eventIds.join(', ')}';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Error searching for events with marker: $e';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -351,6 +445,50 @@ class _MyAppState extends State<MyApp> {
                 label: const Text('Open Calendar with Recurring Event'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Event Marker Operations',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _addEventWithMarker,
+                icon: const Icon(
+                  Icons.bookmark_add,
+                  color: Colors.white,
+                ),
+                label: const Text('Add Event with System Marker'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _addEventWithMarkerOnly,
+                icon: const Icon(
+                  Icons.bookmark,
+                  color: Colors.white,
+                ),
+                label: const Text('Add Event with Marker Only'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _findEventsWithMarker,
+                icon: const Icon(
+                  Icons.search,
+                  color: Colors.white,
+                ),
+                label: const Text('Find Events with Marker'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown,
                   foregroundColor: Colors.white,
                 ),
               ),

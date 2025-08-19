@@ -300,6 +300,79 @@ final allDayEvent = CalendarEvent(
 await NativeCalendar.openCalendarWithEvent(allDayEvent);
 ```
 
+### Event Marker System
+
+The plugin provides a powerful event marker system to identify and find system-generated events. This is useful for apps that need to track events they've created and prevent users from manually modifying them.
+
+#### Creating Events with Markers
+
+Simply add a `systemMarker` to your CalendarEvent. The plugin will automatically format and append the marker to the event description/notes:
+
+```dart
+// Event with user description + marker
+final event = CalendarEvent(
+  title: 'Scheduled Sync Event',
+  startDate: DateTime.now().add(Duration(hours: 2)),
+  endDate: DateTime.now().add(Duration(hours: 3)),
+  description: 'Automated sync event created by the app.',
+  systemMarker: 'APP_SYNC_2024', // Automatically formatted and appended
+  location: 'Virtual Meeting Room',
+);
+
+bool success = await NativeCalendar.addEventToCalendar(event);
+
+// Event with marker only (no user description)
+final markerOnlyEvent = CalendarEvent(
+  title: 'System Event',
+  startDate: DateTime.now().add(Duration(hours: 1)),
+  systemMarker: 'APP_SYNC_2024', // Will be the only content in description
+);
+```
+
+#### How the Marker is Formatted
+
+The plugin automatically handles the description formatting:
+
+1. **With user description**: User content + "\n\n" + formatted marker
+2. **Without description**: Only the formatted marker
+3. **Empty/whitespace description**: Only the formatted marker
+
+Final description examples:
+```
+// With user description:
+"Automated sync event created by the app.
+
+[MARKER:APP_SYNC_2024] System Generated Event - Do not modify this line"
+
+// Without user description:
+"[MARKER:APP_SYNC_2024] System Generated Event - Do not modify this line"
+```
+
+#### Finding Events with Markers
+
+```dart
+// Search for events with a specific marker
+final eventIds = await NativeCalendar.findEventsWithMarker(
+  'APP_SYNC_2024',
+  startDate: DateTime.now().subtract(Duration(days: 7)),
+  endDate: DateTime.now().add(Duration(days: 30)),
+);
+
+print('Found ${eventIds.length} events with marker');
+for (String eventId in eventIds) {
+  print('Event ID: $eventId');
+}
+```
+
+#### Best Practices for Markers
+
+1. **Unique Identifiers**: Use unique markers per app or feature (e.g., 'MYAPP_SYNC_2024', 'BACKUP_REMINDER_V2')
+2. **Version Control**: Include version info in markers for backward compatibility
+3. **Automatic Formatting**: Let the plugin handle marker formatting - just provide the identifier
+4. **Platform Differences**:
+   - **Android**: Marker is stored in the event's `description` field
+   - **iOS**: Marker is stored in the event's `notes` field
+
 ### Permission Handling
 
 ```dart
@@ -335,6 +408,7 @@ if (!hasPermissions) {
 | `isAllDay` | `bool` | Whether event is all-day (default: false) | ❌ |
 | `timeZone` | `String?` | Timezone identifier | ❌ |
 | `url` | `String?` | Associated URL | ❌ |
+| `systemMarker` | `String?` | System marker identifier (automatically formatted) | ❌ |
 | `androidSettings` | `AndroidEventSettings?` | Android-specific settings | ❌ |
 | `iosSettings` | `IosEventSettings?` | iOS-specific settings | ❌ |
 
@@ -396,6 +470,15 @@ Checks if calendar permissions are granted.
 #### `NativeCalendar.requestCalendarPermissions()`
 Requests calendar permissions from user.
 - **Returns**: `Future<bool>` - true if permissions granted
+
+#### `NativeCalendar.findEventsWithMarker(String marker, {DateTime? startDate, DateTime? endDate})`
+Finds calendar events that contain a specific system marker.
+- **Parameters**:
+  - `marker`: The unique marker identifier to search for
+  - `startDate`: Optional start date for search range (defaults to 30 days ago)
+  - `endDate`: Optional end date for search range (defaults to 30 days from now)
+- **Returns**: `Future<List<String>>` - List of event IDs containing the marker
+- **Permissions**: Required (READ_CALENDAR)
 
 ## Troubleshooting
 

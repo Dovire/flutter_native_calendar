@@ -32,6 +32,12 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
       result(hasCalendarPermissions())
     case "requestCalendarPermissions":
       requestCalendarPermissions(result: result)
+    case "findEventsWithMarker":
+      if let args = call.arguments as? [String: Any] {
+        findEventsWithMarker(args: args, result: result)
+      } else {
+        result([])
+      }
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -328,6 +334,43 @@ public class NativeCalendarPlugin: NSObject, FlutterPlugin {
         result(granted)
       }
     }
+  }
+  
+  private func findEventsWithMarker(args: [String: Any], result: @escaping FlutterResult) {
+    guard hasCalendarPermissions() else {
+      result([])
+      return
+    }
+    
+    guard let marker = args["marker"] as? String else {
+      result([])
+      return
+    }
+    
+    let startTimestamp = args["startDate"] as? Double
+    let endTimestamp = args["endDate"] as? Double
+    
+    // Set default date range if not provided (30 days ago to 30 days from now)
+    let defaultStartDate = Date().addingTimeInterval(-30 * 24 * 60 * 60) // 30 days ago
+    let defaultEndDate = Date().addingTimeInterval(30 * 24 * 60 * 60) // 30 days from now
+    
+    let startDate = startTimestamp != nil ? Date(timeIntervalSince1970: startTimestamp! / 1000.0) : defaultStartDate
+    let endDate = endTimestamp != nil ? Date(timeIntervalSince1970: endTimestamp! / 1000.0) : defaultEndDate
+    
+    // Create predicate to search for events in the date range
+    let predicate = eventStore.predicateForEvents(withStart: startDate, end: endDate, calendars: nil)
+    let events = eventStore.events(matching: predicate)
+    
+    var eventIds: [String] = []
+    let targetMarker = "[MARKER:\(marker)] System Generated Event - Do not modify this line"
+    
+    for event in events {
+      if let notes = event.notes, notes.contains(targetMarker) {
+        eventIds.append(event.eventIdentifier)
+      }
+    }
+    
+    result(eventIds)
   }
 }
 

@@ -68,4 +68,29 @@ class MethodChannelNativeCalendar extends NativeCalendarPlatform {
         await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
+
+  @override
+  Future<List<String>> findEventsWithMarker(
+    String marker, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final arguments = <String, dynamic>{
+        'marker': marker,
+        if (startDate != null) 'startDate': startDate.millisecondsSinceEpoch,
+        if (endDate != null) 'endDate': endDate.millisecondsSinceEpoch,
+      };
+
+      final result = await methodChannel.invokeMethod<List>(
+        'findEventsWithMarker',
+        arguments,
+      );
+
+      return result?.cast<String>() ?? [];
+    } on PlatformException catch (e) {
+      debugPrint('Error finding events with marker: ${e.message}');
+      return [];
+    }
+  }
 }

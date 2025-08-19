@@ -58,4 +58,23 @@ abstract class NativeCalendarPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  /// Finds calendar events that contain a specific marker in their description/notes.
+  ///
+  /// The marker is used to identify system-generated events that should not be
+  /// modified manually. The marker format includes a unique identifier and a
+  /// warning message.
+  ///
+  /// [marker] - The unique marker string to search for in event descriptions/notes
+  /// [startDate] - Optional start date to limit the search range
+  /// [endDate] - Optional end date to limit the search range
+  ///
+  /// Returns a list of event IDs that contain the specified marker.
+  Future<List<String>> findEventsWithMarker(
+    String marker, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    throw UnimplementedError('findEventsWithMarker() has not been implemented.');
+  }
 }

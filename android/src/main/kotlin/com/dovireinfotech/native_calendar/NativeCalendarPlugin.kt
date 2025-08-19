@@ -64,6 +64,10 @@ class NativeCalendarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 requestCalendarPermissions(result)
             }
 
+            "findEventsWithMarker" -> {
+                findEventsWithMarker(call.arguments as Map<String, Any>, result)
+            }
+
             else -> {
                 result.notImplemented()
             }
@@ -173,6 +177,64 @@ class NativeCalendarPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
             return true
         }
         return false
+    }
+
+    private fun findEventsWithMarker(arguments: Map<String, Any>, result: Result) {
+        if (!hasCalendarPermissions()) {
+            result.success(emptyList<String>())
+            return
+        }
+
+        try {
+            val marker = arguments["marker"] as String
+            val startDate = arguments["startDate"] as? Long
+            val endDate = arguments["endDate"] as? Long
+            
+            val eventIds = mutableListOf<String>()
+            
+            // Set default date range if not provided (30 days ago to 30 days from now)
+            val searchStartTime = startDate ?: (System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000))
+            val searchEndTime = endDate ?: (System.currentTimeMillis() + (30L * 24 * 60 * 60 * 1000))
+            
+            val projection = arrayOf(
+                CalendarContract.Events._ID,
+                CalendarContract.Events.DESCRIPTION,
+                CalendarContract.Events.TITLE,
+                CalendarContract.Events.DTSTART,
+                CalendarContract.Events.DTEND
+            )
+            
+            val selection = "${CalendarContract.Events.DTSTART} >= ? AND ${CalendarContract.Events.DTSTART} <= ? AND ${CalendarContract.Events.DESCRIPTION} LIKE ?"
+            val selectionArgs = arrayOf(
+                searchStartTime.toString(),
+                searchEndTime.toString(),
+                "%[MARKER:$marker]%"
+            )
+            
+            val cursor = context?.contentResolver?.query(
+                CalendarContract.Events.CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )
+            
+            cursor?.use {
+                while (it.moveToNext()) {
+                    val eventId = it.getString(it.getColumnIndexOrThrow(CalendarContract.Events._ID))
+                    val description = it.getString(it.getColumnIndexOrThrow(CalendarContract.Events.DESCRIPTION))
+                    
+                    // Double-check that the description contains our specific marker format
+                    if (description != null && description.contains("[MARKER:$marker] System Generated Event - Do not modify this line")) {
+                        eventIds.add(eventId)
+                    }
+                }
+            }
+            
+            result.success(eventIds)
+        } catch (e: Exception) {
+            result.success(emptyList<String>())
+        }
     }
 
     private fun findPrimaryCalendarId(): Int {

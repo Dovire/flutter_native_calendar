@@ -24,6 +24,9 @@ class CalendarEvent {
   /// URL associated with the event
   final String? url;
 
+  /// System marker for identifying app-generated events
+  final String? systemMarker;
+
   /// Android-specific settings
   final AndroidEventSettings? androidSettings;
 
@@ -39,6 +42,7 @@ class CalendarEvent {
     this.isAllDay = false,
     this.timeZone,
     this.url,
+    this.systemMarker,
     this.androidSettings,
     this.iosSettings,
   }) : assert(
@@ -54,9 +58,12 @@ class CalendarEvent {
       locationData = location;
     }
 
+    // Build the final description with system marker if provided
+    String? finalDescription = _buildDescriptionWithMarker();
+
     return {
       'title': title,
-      'description': description,
+      'description': finalDescription,
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate?.millisecondsSinceEpoch,
       'location': locationData,
@@ -66,6 +73,25 @@ class CalendarEvent {
       'androidSettings': androidSettings?.toMap(),
       'iosSettings': iosSettings?.toMap(),
     };
+  }
+
+  /// Builds the description with system marker, handling different scenarios
+  String? _buildDescriptionWithMarker() {
+    if (systemMarker == null) {
+      // No system marker, return original description
+      return description;
+    }
+
+    // Create the formatted marker
+    final formattedMarker = '[MARKER:$systemMarker] System Generated Event - Do not modify this line';
+
+    if (description == null || description!.trim().isEmpty) {
+      // No user description provided, use only the marker
+      return formattedMarker;
+    } else {
+      // User description exists, append marker with proper spacing
+      return '${description!.trim()}\n\n$formattedMarker';
+    }
   }
 }
 
